@@ -1,0 +1,147 @@
+head	1.4;
+access;
+symbols;
+locks;
+comment	@// @;
+
+
+1.4
+date	2016.09.21.23.56.20;	author -;	state -;
+branches;
+next	1.3;
+
+1.3
+date	2016.08.18.22.13.48;	author -;	state -;
+branches;
+next	1.2;
+
+1.2
+date	2016.08.18.19.17.47;	author -;	state -;
+branches;
+next	1.1;
+
+1.1
+date	2016.08.18.19.01.06;	author -;	state -;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.4
+log
+@-
+@
+text
+@// $Id: string_set.cpp,v 1.3 2016-08-18 15:13:48-07 - - $
+
+#include <string>
+#include <unordered_set>
+using namespace std;
+
+#include "string_set.h"
+
+unordered_set<string> string_set::set;
+
+string_set::string_set() {
+   set.max_load_factor (0.5);
+}
+
+const string* string_set::intern (const char* string) {
+   auto handle = set.insert (string);
+   return &*handle.first;
+}
+
+void string_set::dump (FILE* out) {
+   static unordered_set<string>::hasher hash_fn
+               = string_set::set.hash_function();
+   size_t max_bucket_size = 0;
+   for (size_t bucket = 0; bucket < set.bucket_count(); ++bucket) {
+      bool need_index = true;
+      size_t curr_size = set.bucket_size (bucket);
+      if (max_bucket_size < curr_size) max_bucket_size = curr_size;
+      for (auto itor = set.cbegin (bucket);
+           itor != set.cend (bucket); ++itor) {
+         if (need_index) fprintf (out, "string_set[%4zu]: ", bucket);
+                    else fprintf (out, "           %4s   ", "");
+         need_index = false;
+         const string* str = &*itor;
+         fprintf (out, "%22zu %p->\"%s\"\n", hash_fn(*str),
+                  str, str->c_str());
+      }
+   }
+   fprintf (out, "load_factor = %.3f\n", set.load_factor());
+   fprintf (out, "bucket_count = %zu\n", set.bucket_count());
+   fprintf (out, "max_bucket_size = %zu\n", max_bucket_size);
+}
+
+@
+
+
+1.3
+log
+@-
+@
+text
+@d1 1
+a1 1
+// $Id: string_set.cpp,v 1.2 2016-08-18 15:12:57-07 - - $
+d31 1
+a31 1
+                    else fprintf (out, "          %4s   ", "");
+@
+
+
+1.2
+log
+@-
+@
+text
+@d1 1
+a1 1
+// $Id: string_set.cpp,v 1.1 2016-08-18 12:01:06-07 - - $
+d3 1
+d9 1
+a9 1
+using string_set = unordered_set<string>;
+d11 3
+a13 2
+string_set set;
+string_set::hasher hash_fn = set.hash_function();
+d15 2
+a16 2
+const string* intern_string_set (const char* string) {
+   pair<string_set::const_iterator,bool> handle = set.insert (string);
+d20 3
+a22 1
+void dump_string_set (FILE* out) {
+d28 1
+a28 1
+      for (string_set::const_local_iterator itor = set.cbegin (bucket);
+d30 2
+a31 2
+         if (need_index) fprintf (out, "hash[%4lu]: ", bucket);
+                    else fprintf (out, "     %4s   ", "");
+d34 2
+a35 2
+         fprintf (out, "%20zu %p->\"%s\"\n",
+                  hash_fn(*str), str, str->c_str());
+@
+
+
+1.1
+log
+@-
+@
+text
+@d1 1
+a1 1
+// $Id: string_set.cpp,v 1.9 2016-03-24 14:28:36-07 - - $
+d11 1
+d31 1
+a31 2
+                  set.hash_function()(*str),
+                  str, str->c_str());
+@
